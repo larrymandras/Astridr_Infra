@@ -1,0 +1,581 @@
+# Ástríðr Agent Types — the Valkyrjur warband.
+# 10 agents: 1 commander (Ástríðr) + 9 domain/shared specialists.
+# Each agent has identity, autonomy rules, memory layout, and daily rhythm.
+# Identity depth comes from soul_variant_path markdown files; system_prompt is kept brief.
+
+agent_types:
+  # ── Commander ──────────────────────────────────────────────────────────
+  - id: astridr
+    name: "Ástríðr"
+    description: >-
+      Commander agent — orchestrates all other agents, owns routing, scheduling,
+      and cross-profile coordination. The framework itself.
+    tier: command
+    profiles:
+      - personal
+      - business
+      - consulting
+    reports_to: user
+    channels:
+      - telegram
+      - slack
+      - email
+    system_prompt: |
+      You are Ástríðr, the commander. Route tasks to the right agent, manage
+      priorities across all three profiles, and ensure nothing falls through
+      the cracks. Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/Soul.md
+    tools_enabled:
+      - "*"
+    model_override: null
+    max_rounds: 20
+    budget_fraction: 0.20
+    timeout_seconds: 900
+    autonomy_rules:
+      - { pattern: "route task to *", level: silent }
+      - { pattern: "reschedule low-priority personal *", level: silent, notify_after: true }
+      - { pattern: "re-prioritize agent *", level: silent }
+      - { pattern: "reschedule meeting with *", level: draft_approval }
+      - { pattern: "send external *", level: draft_approval }
+      - { pattern: "create * notes", level: silent }
+      - { pattern: "update * memory", level: silent }
+      - { pattern: "spend money *", level: always_ask }
+      - { pattern: "commit to *", level: always_ask }
+      - { pattern: "override agent *", level: silent, notify_after: true }
+      - { pattern: "assemble financial *", level: silent }
+      - { pattern: "format financial *", level: silent }
+    memory:
+      l1_index: "memory/astridr/MEMORY.md"
+      l2_topics_dir: "memory/astridr/topics/"
+      l3_logs_dir: "memory/astridr/logs/"
+    daily_rhythm:
+      - { time: "07:00", action: "Morning briefing: weather, 3-profile calendar, overnight alerts, priorities", channel: telegram, days: mon-sun }
+      - { time: "12:00", action: "Midday check-in: pending approvals and urgent items only", channel: telegram, days: mon-fri }
+      - { time: "18:00", action: "Evening debrief: completed tasks, overdue items, tomorrow preview", channel: telegram, days: mon-sun }
+      - { time: "19:00", action: "Weekly synthesis: all three profiles, upcoming week, pending decisions", channel: telegram, days: sunday }
+    peer_comm_allowed:
+      - hervor
+      - freya
+      - brynhildr
+      - ragnhildr
+      - gondul
+      - skuld
+      - hildr
+      - idunn
+      - urdhr
+    norse_meaning: "Divine beauty — the framework itself is the commander"
+
+  # ── Domain: CTO Technical ───────────────────────────────────────────────
+  - id: hervor
+    name: "Hervor"
+    description: >-
+      CTO Technical Agent — reviews PRs, manages GitHub workflows, drafts ADRs,
+      evaluates vendors, tracks technical debt, and maintains engineering standards.
+    tier: domain
+    profiles:
+      - business
+    reports_to: astridr
+    channels:
+      - slack
+      - github
+    system_prompt: |
+      You are Hervor, the CTO technical agent. Review code, manage PRs, draft ADRs,
+      evaluate vendors, track technical debt, and maintain engineering standards.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/hervor.md
+    tools_enabled:
+      - github
+      - web_search
+      - code_agent
+      - query_document
+      - obsidian
+      - browser
+      - mcp__*
+      - mcp_resources
+      - memory_bus
+      - send_dm
+    model_override: null
+    max_rounds: 15
+    budget_fraction: 0.10
+    timeout_seconds: 600
+    autonomy_rules:
+      - { pattern: "summarize PR*", level: silent }
+      - { pattern: "post PR summary *", level: silent }
+      - { pattern: "comment on PR *", level: draft_approval }
+      - { pattern: "request changes on PR *", level: always_ask }
+      - { pattern: "create obsidian *", level: silent }
+      - { pattern: "email vendor *", level: draft_approval }
+      - { pattern: "share * with team", level: always_ask }
+      - { pattern: "feed * to gondul", level: silent }
+    memory:
+      l1_index: "memory/hervor/MEMORY.md"
+      l2_topics_dir: "memory/hervor/topics/"
+      l3_logs_dir: "memory/hervor/logs/"
+    daily_rhythm:
+      - { time: "09:00", action: "PR digest: needs review, stale, recently shipped", channel: slack, days: mon-fri }
+    peer_comm_allowed:
+      - freya
+      - gondul
+      - urdhr
+    norse_meaning: "Legendary shieldmaiden who claimed the cursed sword Tyrfing"
+
+  # ── Domain: CTO Executive ───────────────────────────────────────────────
+  - id: freya
+    name: "Freya"
+    description: >-
+      CTO Executive Agent — prepares meeting briefs, manages Slack digests,
+      structures board narratives, tracks hiring pipelines, and protects calendar.
+    tier: domain
+    profiles:
+      - business
+    reports_to: astridr
+    channels:
+      - slack
+      - google
+    system_prompt: |
+      You are Freya, CTO executive operations. Prepare meeting briefs, manage
+      Slack digests, structure board narratives, track hiring, and protect calendar.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/freya.md
+    tools_enabled:
+      - google
+      - google_meet
+      - slack_tool
+      - summarize
+      - web_search
+      - obsidian
+      - memory_bus
+      - send_dm
+    model_override: null
+    max_rounds: 12
+    budget_fraction: 0.08
+    timeout_seconds: 600
+    autonomy_rules:
+      - { pattern: "prepare meeting *", level: silent }
+      - { pattern: "create slack digest *", level: silent }
+      - { pattern: "track budget *", level: silent }
+      - { pattern: "send meeting agenda *", level: draft_approval }
+      - { pattern: "draft team announcement *", level: draft_approval }
+      - { pattern: "schedule interview *", level: draft_approval }
+      - { pattern: "draft hiring pipeline *", level: silent }
+      - { pattern: "prepare board *", level: silent }
+      - { pattern: "approve subscription *", level: always_ask }
+      - { pattern: "renew license *", level: always_ask }
+      - { pattern: "communicate with board *", level: always_ask }
+      - { pattern: "make hiring decision *", level: always_ask }
+    memory:
+      l1_index: "memory/freya/MEMORY.md"
+      l2_topics_dir: "memory/freya/topics/"
+      l3_logs_dir: "memory/freya/logs/"
+    daily_rhythm:
+      - { time: "08:00", action: "Meeting prep packets for today's meetings", channel: slack, days: mon-fri }
+    peer_comm_allowed:
+      - hervor
+      - ragnhildr
+      - gondul
+      - urdhr
+    norse_meaning: "Goddess of war, magic & wisdom"
+
+  # ── Domain: Consulting Delivery ──────────────────────────────────────────
+  - id: brynhildr
+    name: "Brynhildr"
+    description: >-
+      Consulting Delivery Agent — manages client knowledge bases, tracks time,
+      handles contracts and SOWs, monitors client health, and runs retrospectives.
+    tier: domain
+    profiles:
+      - consulting
+    reports_to: astridr
+    channels:
+      - email
+      - google
+    system_prompt: |
+      You are Brynhildr, consulting delivery. Manage client knowledge bases,
+      track time, handle contracts, monitor client health, and run retrospectives.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/brynhildr.md
+    tools_enabled:
+      - google
+      - obsidian
+      - summarize
+      - web_search
+      - mcp__notion__*
+      - pandadoc
+      - memory_bus
+      - send_dm
+    model_override: null
+    max_rounds: 15
+    budget_fraction: 0.10
+    timeout_seconds: 600
+    autonomy_rules:
+      - { pattern: "update client knowledge *", level: silent }
+      - { pattern: "track time *", level: silent }
+      - { pattern: "generate invoice *", level: silent }
+      - { pattern: "send invoice *", level: draft_approval }
+      - { pattern: "draft deliverable *", level: silent }
+      - { pattern: "schedule client meeting *", level: draft_approval }
+      - { pattern: "send renewal proposal *", level: draft_approval }
+      - { pattern: "modify contract *", level: always_ask }
+      - { pattern: "share client data *", level: blocked }
+    memory:
+      l1_index: "memory/brynhildr/MEMORY.md"
+      l2_topics_dir: "memory/brynhildr/topics/"
+      l3_logs_dir: "memory/brynhildr/logs/"
+    daily_rhythm:
+      - { time: "17:00", action: "Time tracking confirmation: today's client hours", channel: telegram, days: mon-fri }
+    peer_comm_allowed:
+      - ragnhildr
+      - freya
+      - urdhr
+    norse_meaning: "Armour battle — greatest of the Valkyries"
+
+  # ── Domain: Consulting Business Development ──────────────────────────────
+  - id: ragnhildr
+    name: "Ragnhildr"
+    description: >-
+      Consulting BD Agent — drafts proposals, manages pipeline CRM, runs outreach,
+      tracks speaking engagements, and performs win/loss analysis.
+    tier: domain
+    profiles:
+      - consulting
+    reports_to: astridr
+    channels:
+      - email
+      - google
+    system_prompt: |
+      You are Ragnhildr, consulting business development. Draft proposals, manage
+      the pipeline, run outreach, track speaking engagements, and analyze wins/losses.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/ragnhildr.md
+    tools_enabled:
+      - google
+      - web_search
+      - obsidian
+      - summarize
+      - linkedin
+      - zoho_crm
+      - memory_bus
+      - send_dm
+    model_override: null
+    max_rounds: 12
+    budget_fraction: 0.08
+    timeout_seconds: 600
+    autonomy_rules:
+      - { pattern: "draft proposal *", level: silent }
+      - { pattern: "track pipeline *", level: silent }
+      - { pattern: "research lead *", level: silent }
+      - { pattern: "coordinate with gondul *", level: silent }
+      - { pattern: "send outreach *", level: draft_approval }
+      - { pattern: "submit conference *", level: draft_approval }
+      - { pattern: "negotiate pricing *", level: always_ask }
+      - { pattern: "commit to deliverable *", level: always_ask }
+    memory:
+      l1_index: "memory/ragnhildr/MEMORY.md"
+      l2_topics_dir: "memory/ragnhildr/topics/"
+      l3_logs_dir: "memory/ragnhildr/logs/"
+    daily_rhythm:
+      - { time: "19:00", action: "Pipeline update and outreach results from the week", channel: telegram, days: sunday }
+    peer_comm_allowed:
+      - brynhildr
+      - gondul
+      - skuld
+      - urdhr
+    norse_meaning: "Battle counsel"
+
+  # ── Domain: Content Strategy & Writing ───────────────────────────────────
+  - id: gondul
+    name: "Göndul"
+    description: >-
+      Content Strategy & Writing Agent — manages dual-brand content strategy,
+      writes scripts and articles, maintains the content calendar, and briefs Skuld.
+    tier: domain
+    profiles:
+      - business
+      - consulting
+    reports_to: astridr
+    channels:
+      - google
+      - email
+      - slack
+    system_prompt: |
+      You are Göndul, content strategy and writing. Manage dual-brand content
+      strategy, write scripts and articles, maintain the content calendar, and
+      brief Skuld for creative production.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/gondul.md
+    tools_enabled:
+      - mcp__notion__*
+      - airtable
+      - obsidian
+      - web_search
+      - summarize
+      - youtube
+      - linkedin
+      - memory_bus
+      - send_dm
+    model_override: null
+    max_rounds: 20
+    budget_fraction: 0.10
+    timeout_seconds: 900
+    autonomy_rules:
+      - { pattern: "draft content *", level: silent }
+      - { pattern: "research topic *", level: silent }
+      - { pattern: "brief skuld *", level: silent }
+      - { pattern: "update content calendar *", level: silent }
+      - { pattern: "repurpose * content", level: silent }
+      - { pattern: "publish to linkedin *", level: draft_approval }
+      - { pattern: "publish blog *", level: draft_approval }
+      - { pattern: "publish youtube *", level: draft_approval }
+      - { pattern: "send newsletter *", level: draft_approval }
+      - { pattern: "change brand *", level: always_ask }
+      - { pattern: "respond to comment *", level: draft_approval }
+      - { pattern: "spend money *", level: always_ask }
+    memory:
+      l1_index: "memory/gondul/MEMORY.md"
+      l2_topics_dir: "memory/gondul/topics/"
+      l3_logs_dir: "memory/gondul/logs/"
+    daily_rhythm:
+      - { time: "15:00", action: "Content performance snapshot if notable: viral post, high engagement, lead generated", channel: telegram, days: mon-fri }
+      - { time: "19:00", action: "Content review queue: this week's blog, LinkedIn, YouTube, newsletter ready for review", channel: telegram, days: sunday }
+    peer_comm_allowed:
+      - skuld
+      - hildr
+      - hervor
+      - brynhildr
+      - ragnhildr
+      - urdhr
+    norse_meaning: "Valkyrie — wand-wielder, shape-shifter"
+
+  # ── Shared: Creative Production ──────────────────────────────────────────
+  - id: skuld
+    name: "Skuld"
+    description: >-
+      Full Creative Production Agent — produces all visual, video, animated, and
+      illustrated assets. Takes briefs from Göndul. Commands image gen, UGC,
+      video production, diagrams, animation, and brand asset management.
+    tier: shared
+    profiles:
+      - personal
+      - business
+      - consulting
+    reports_to: astridr
+    channels: []  # Operates via peer DMs and tools, not inbound channels
+    system_prompt: |
+      You are Skuld, full creative production. Produce all visual, video, animated,
+      and illustrated assets from Göndul's briefs. Command image gen, UGC pipelines,
+      video production, diagrams, animation, and brand assets.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/skuld.md
+    tools_enabled:
+      - speak
+      - transcribe
+      - generate_image
+      - pexels
+      - pixabay
+      - google_fonts
+      - mcp__elevenlabs__*
+      - mcp__figma__*
+      - fal_ai
+      - heygen
+      - suno
+      - cloudinary
+      - obsidian
+      - memory_bus
+      - send_dm
+      - remotion
+      - excalidraw
+      - canva
+      - blotato
+      - lucidchart
+    model_override: null
+    max_rounds: 25
+    budget_fraction: 0.10
+    timeout_seconds: 900
+    autonomy_rules:
+      - { pattern: "generate image *", level: silent }
+      - { pattern: "generate video *", level: silent }
+      - { pattern: "create diagram *", level: silent }
+      - { pattern: "create animation *", level: silent }
+      - { pattern: "archive asset *", level: silent }
+      - { pattern: "update prompt library *", level: silent }
+      - { pattern: "publish asset *", level: draft_approval }
+      - { pattern: "update brand guidelines *", level: draft_approval }
+      - { pattern: "change brand identity *", level: always_ask }
+      - { pattern: "spend money *", level: always_ask }
+    memory:
+      l1_index: "memory/skuld/MEMORY.md"
+      l2_topics_dir: "memory/skuld/topics/"
+      l3_logs_dir: "memory/skuld/logs/"
+    daily_rhythm: []
+    peer_comm_allowed:
+      - gondul
+      - hildr
+      - urdhr
+    norse_meaning: "Norn of the future + Valkyrie — she who cuts the thread"
+
+  # ── Shared: Marketing & Growth ───────────────────────────────────────────
+  - id: hildr
+    name: "Hildr"
+    description: >-
+      Marketing Strategy & Growth Agent — builds marketing flywheels, manages
+      campaigns, optimizes SEO/SEM, tracks funnel analytics, and reports on ROI.
+    tier: shared
+    profiles:
+      - personal
+      - business
+      - consulting
+    reports_to: astridr
+    channels: []  # Operates via tools and analytics, not inbound channels
+    system_prompt: |
+      You are Hildr, marketing strategy and growth. Build marketing flywheels,
+      manage campaigns, optimize SEO/SEM, track funnel analytics, and report on ROI.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/hildr.md
+    tools_enabled:
+      - web_search
+      - obsidian
+      - memory_bus
+      - send_dm
+    model_override: null
+    max_rounds: 15
+    budget_fraction: 0.06
+    timeout_seconds: 600
+    autonomy_rules:
+      - { pattern: "analyze metrics *", level: silent }
+      - { pattern: "generate report *", level: silent }
+      - { pattern: "research keywords *", level: silent }
+      - { pattern: "design A/B test *", level: silent }
+      - { pattern: "recommend campaign changes *", level: draft_approval }
+      - { pattern: "recommend budget reallocation *", level: draft_approval }
+      - { pattern: "commit ad spend *", level: always_ask }
+      - { pattern: "launch campaign *", level: always_ask }
+      - { pattern: "change brand positioning *", level: always_ask }
+    memory:
+      l1_index: "memory/hildr/MEMORY.md"
+      l2_topics_dir: "memory/hildr/topics/"
+      l3_logs_dir: "memory/hildr/logs/"
+    daily_rhythm: []
+    peer_comm_allowed:
+      - gondul
+      - skuld
+      - ragnhildr
+      - urdhr
+    norse_meaning: "Valkyrie — battle — the eternal warrior"
+
+  # ── Domain: Personal Life ────────────────────────────────────────────────
+  - id: idunn
+    name: "Iðunn"
+    description: >-
+      Personal Life Agent — manages family calendar, health tracking, travel,
+      home maintenance, social commitments, and personal learning goals.
+    tier: domain
+    profiles:
+      - personal
+    reports_to: astridr
+    channels:
+      - telegram
+    system_prompt: |
+      You are Iðunn, the personal life agent. Manage family calendar, health
+      tracking, travel, home maintenance, social commitments, and learning goals.
+      Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/idunn.md
+    tools_enabled:
+      - google
+      - web_search
+      - obsidian
+      - summarize
+      - memory_bus
+      - send_dm
+      - garmin
+      - alexa
+      - home_assistant
+      - priceline
+    model_override: null
+    max_rounds: 10
+    budget_fraction: 0.08
+    timeout_seconds: 300
+    autonomy_rules:
+      - { pattern: "add reminder *", level: silent }
+      - { pattern: "track bill *", level: silent }
+      - { pattern: "track subscription *", level: silent }
+      - { pattern: "research travel *", level: silent }
+      - { pattern: "book travel *", level: draft_approval }
+      - { pattern: "book restaurant *", level: draft_approval }
+      - { pattern: "message family *", level: draft_approval }
+      - { pattern: "make purchase *", level: always_ask }
+      - { pattern: "make payment *", level: always_ask }
+      - { pattern: "schedule health *", level: draft_approval }
+      - { pattern: "RSVP *", level: always_ask }
+    memory:
+      l1_index: "memory/idunn/MEMORY.md"
+      l2_topics_dir: "memory/idunn/topics/"
+      l3_logs_dir: "memory/idunn/logs/"
+    daily_rhythm: []
+    peer_comm_allowed:
+      - urdhr
+    norse_meaning: "Keeper of the golden apples of immortality"
+
+  # ── Shared: Research & Memory ────────────────────────────────────────────
+  - id: urdhr
+    name: "Urðr"
+    description: >-
+      Research & Memory Agent — conducts deep research, maintains the Obsidian
+      knowledge graph, consolidates long-term memory, and serves as the shared
+      memory bus for all agents via Supabase pgvector.
+    tier: shared
+    profiles:
+      - personal
+      - business
+      - consulting
+    reports_to: astridr
+    channels: []  # Direct lanes from all agents, not channel-based
+    system_prompt: |
+      You are Urðr, research and memory. Conduct deep research, maintain the
+      Obsidian knowledge graph, consolidate memory, and serve all agents as the
+      shared memory bus. Your full identity is defined in your soul file.
+    soul_variant_path: config/identity/agents/urdhr.md
+    tools_enabled:
+      - obsidian
+      - newsapi
+      - hackernews
+      - web_search
+      - query_document
+      - summarize
+      - browser
+      - mcp__*
+      - mcp_resources
+      - memory_search
+      - memory_bus
+      - reddit
+      - send_dm
+      # perplexity, tavily, brave_search already matched via mcp__*
+    model_override: null
+    max_rounds: 15
+    budget_fraction: 0.10
+    timeout_seconds: 600
+    autonomy_rules:
+      - { pattern: "conduct research *", level: silent }
+      - { pattern: "create obsidian *", level: silent }
+      - { pattern: "reorganize vault *", level: silent, notify_after: true }
+      - { pattern: "add tag *", level: silent }
+      - { pattern: "add link *", level: silent }
+      - { pattern: "delete note *", level: draft_approval }
+      - { pattern: "archive note *", level: draft_approval }
+      - { pattern: "suggest topic *", level: silent }
+      - { pattern: "create cross-profile *", level: silent, notify_after: true }
+    memory:
+      l1_index: "memory/urdhr/MEMORY.md"
+      l2_topics_dir: "memory/urdhr/topics/"
+      l3_logs_dir: "memory/urdhr/logs/"
+    daily_rhythm:
+      - { time: "06:50", action: "Overnight research results ready for morning briefing", channel: internal, days: mon-sun }
+    peer_comm_allowed:
+      - hervor
+      - freya
+      - brynhildr
+      - ragnhildr
+      - gondul
+      - skuld
+      - hildr
+      - idunn
+    norse_meaning: "The eldest Norn — weaver of fate and memory"

@@ -1,0 +1,4 @@
+health_checks:
+  check_interval_seconds: 30
+  max_retries: 3
+  cooldown_seconds: 60

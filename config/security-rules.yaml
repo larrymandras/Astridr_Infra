@@ -1,0 +1,40 @@
+security:
+  # Layer 1: Strip / mask PII from inbound messages
+  pii_filter_enabled: true
+
+  # Layer 2: DLP block (stub — reserved for Phase 2)
+  # dlp_enabled: false
+
+  # Layer 3: Detect and block prompt-injection attempts
+  injection_defense_enabled: true
+
+  # Layer 4: Block commands matching the blocklist
+  command_blocklist_enabled: true
+
+  # Layer 5: Sensitive-action gate (stub — reserved for Phase 2)
+  # sensitive_action_enabled: false
+
+  # Layer 6: Redact secrets (API keys, tokens) from context
+  secret_scanner_enabled: true
+
+  # Layer 7: (reserved)
+
+  # Layer 8: Enforce credential-access policies
+  credential_access_enabled: true
+
+  # Layer 9: Restrict outbound network calls to allowed domains
+  egress_control_enabled: true
+
+  # Layer 10: Row-level security enforcement per profile
+  rls_enforcement_enabled: true
+
+  # Layer 11: (reserved)
+
+  # Layer 12: Sanitize agent output before delivery
+  output_filter_enabled: true
+
+  # Layer 13: Append every security event to the audit log
+  audit_log_enabled: true
+
+  # Layer 14: Human-in-the-loop approval gates for high-risk actions
+  hitl_gate_enabled: true

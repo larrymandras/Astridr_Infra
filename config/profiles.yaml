@@ -1,0 +1,112 @@
+profiles:
+  - id: personal
+    name: Personal
+    channels:
+      - telegram
+      - web
+      - voice
+    channel_mappings:
+      slack: ["C0AJ120ND1U"]
+      telegram: ["7815748065", "-5142563311"]
+      email: ["larry@gmail.com"]
+      web: ["/personal"]
+    default_for:
+      - telegram
+      - web
+    budget:
+      daily_usd: 10.0
+      monthly_usd: 200.0
+      soft_limit_pct: 0.8
+    model_default: "anthropic/claude-sonnet-4-5"
+    model_fallback: "ollama/llama3.2:8b"
+    max_rounds: 10
+    tools_enabled: ["*"]
+    tools_disabled: []
+    tts_enabled: true
+
+  - id: business
+    name: Business
+    channels:
+      - slack
+      - email
+    channel_mappings:
+      slack: ["C0AJ124Q78E"]
+      telegram: ["-5045799916"]
+      web: ["/business"]
+    default_for:
+      - slack
+      - email
+    budget:
+      daily_usd: 25.0
+      monthly_usd: 500.0
+      soft_limit_pct: 0.8
+    model_default: "anthropic/claude-sonnet-4-5"
+    model_fallback: "ollama/llama3.2:8b"
+    max_rounds: 10
+    tools_enabled: ["*"]
+    tools_disabled: []
+    tts_enabled: true
+
+  - id: consulting
+    name: Consulting
+    channels: []
+    channel_mappings:
+      slack: ["C0AHWMW4DUK"]
+      telegram: ["-5067822871"]
+      web: ["/consulting"]
+    budget:
+      daily_usd: 15.0
+      monthly_usd: 300.0
+      soft_limit_pct: 0.8
+    model_default: "anthropic/claude-sonnet-4-5"
+    model_fallback: "ollama/llama3.2:8b"
+    max_rounds: 10
+    tools_enabled: ["*"]
+    tools_disabled:
+      - coding_agent
+      - github
+    tts_enabled: true
+
+# ─── Runtime Agent Profiles ──────────────────────────────────────
+# Lightweight in-session personas switched via /profile command.
+# Distinct from the routing profiles above.
+
+agent_profiles:
+  - id: default
+    name: General Assistant
+    tools_enabled: ["*"]
+    tools_disabled: []
+    max_rounds: 10
+    temperature: 0.7
+
+  - id: developer
+    name: Developer Mode
+    soul_override: "Focus on code quality, debugging, and technical precision."
+    tools_enabled: ["*"]
+    tools_disabled: [imagegen, tts, canva, remotion, blotato]
+    rules_override:
+      prefer_code_examples: true
+      verbose_tool_explanations: false
+    max_rounds: 15
+    temperature: 0.3
+
+  - id: researcher
+    name: Research Mode
+    soul_override: "Focus on thorough analysis, source verification, and comprehensive summaries."
+    tools_enabled: [web_search, document_query, memory_search, memory_save, summarizer, hackernews, newsapi, reddit]
+    tools_disabled: []
+    rules_override:
+      always_summarize_first: true
+      include_sources: true
+    max_rounds: 12
+    temperature: 0.5
+
+  - id: writer
+    name: Writer Mode
+    soul_override: "Focus on creative writing, clear prose, and expressive language."
+    tools_enabled: [memory_search, memory_save, web_search, summarizer]
+    tools_disabled: []
+    rules_override:
+      verbose_tool_explanations: false
+    max_rounds: 8
+    temperature: 0.9

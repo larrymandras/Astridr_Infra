@@ -1,0 +1,22 @@
+providers:
+  - name: openrouter
+    type: openrouter
+    base_url: "https://openrouter.ai/api/v1"
+    api_key_ref: "OPENROUTER_API_KEY"
+    default_model: "anthropic/claude-sonnet-4-5"
+    cooldown_seconds: 60
+    priority: 0
+
+  - name: ollama
+    type: ollama
+    base_url: "http://localhost:11434"
+    default_model: "llama3.2:8b"
+    cooldown_seconds: 30
+    priority: 1
+
+  - name: anthropic_direct
+    type: anthropic
+    api_key_ref: "ANTHROPIC_API_KEY"
+    default_model: "claude-sonnet-4-5-20250514"
+    cooldown_seconds: 60
+    priority: 2

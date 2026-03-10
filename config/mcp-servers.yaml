@@ -1,0 +1,53 @@
+# MCP server configurations
+# Servers are connected at startup; their tools are registered in the tool registry
+mcp_servers:
+  - name: filesystem
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "~/.astridr"]
+
+  - name: fetch
+    transport: stdio
+    command: python
+    args: ["-m", "mcp_server_fetch"]
+
+  - name: notion
+    transport: stdio
+    command: npx
+    args: ["-y", "@notionhq/notion-mcp-server"]
+    env:
+      NOTION_API_KEY: "${NOTION_API_KEY}"
+
+  - name: brave_search
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-brave-search"]
+    env:
+      BRAVE_API_KEY: "${BRAVE_API_KEY}"
+
+  - name: tavily
+    transport: stdio
+    command: npx
+    args: ["-y", "tavily-mcp@latest"]
+    env:
+      TAVILY_API_KEY: "${TAVILY_API_KEY}"
+
+  - name: perplexity
+    transport: stdio
+    command: npx
+    args: ["-y", "perplexity-mcp@latest"]
+    env:
+      PERPLEXITY_API_KEY: "${PERPLEXITY_API_KEY}"
+
+  - name: elevenlabs
+    transport: stdio
+    command: npx
+    args: ["-y", "elevenlabs-mcp@latest"]
+    env:
+      ELEVENLABS_API_KEY: "${ELEVENLABS_API_KEY}"
+
+  - name: figma
+    transport: sse
+    url: "https://mcp.figma.com/mcp"
+    env:
+      FIGMA_PERSONAL_ACCESS_TOKEN: "${FIGMA_PERSONAL_ACCESS_TOKEN}"
