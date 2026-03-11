@@ -8,7 +8,7 @@ profiles:
     channel_mappings:
       slack: ["C0AJ120ND1U"]
       telegram: ["7815748065", "-5142563311"]
-      email: ["larry@gmail.com"]
+      email: ["mandrasle@gmail.com"]
       web: ["/personal"]
     default_for:
       - telegram
@@ -17,8 +17,8 @@ profiles:
       daily_usd: 10.0
       monthly_usd: 200.0
       soft_limit_pct: 0.8
-    model_default: "anthropic/claude-sonnet-4-5"
-    model_fallback: "ollama/llama3.2:8b"
+    model_default: "anthropic/claude-sonnet-4-20250514"
+    model_fallback: "qwen2.5:7b"
     max_rounds: 10
     tools_enabled: ["*"]
     tools_disabled: []
@@ -32,16 +32,16 @@ profiles:
     channel_mappings:
       slack: ["C0AJ124Q78E"]
       telegram: ["-5045799916"]
+      email: ["lmandras@myprotectall.com"]
       web: ["/business"]
     default_for:
       - slack
-      - email
     budget:
       daily_usd: 25.0
       monthly_usd: 500.0
       soft_limit_pct: 0.8
-    model_default: "anthropic/claude-sonnet-4-5"
-    model_fallback: "ollama/llama3.2:8b"
+    model_default: "anthropic/claude-sonnet-4-20250514"
+    model_fallback: "qwen2.5:7b"
     max_rounds: 10
     tools_enabled: ["*"]
     tools_disabled: []
@@ -53,13 +53,14 @@ profiles:
     channel_mappings:
       slack: ["C0AHWMW4DUK"]
       telegram: ["-5067822871"]
+      email: ["mandrasle@gmail.com"]
       web: ["/consulting"]
     budget:
       daily_usd: 15.0
       monthly_usd: 300.0
       soft_limit_pct: 0.8
-    model_default: "anthropic/claude-sonnet-4-5"
-    model_fallback: "ollama/llama3.2:8b"
+    model_default: "anthropic/claude-sonnet-4-20250514"
+    model_fallback: "qwen2.5:7b"
     max_rounds: 10
     tools_enabled: ["*"]
     tools_disabled:
