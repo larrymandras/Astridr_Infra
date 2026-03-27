@@ -1,5 +1,3 @@
-version: "3.8"
-
 # Ástríðr Infrastructure Stack
 # Phase 0: Base services (Supabase local, Ollama)
 # Phase 1: Full Supabase stack with health checks, network isolation
@@ -12,7 +10,7 @@ services:
     container_name: astridr-supabase-db
     restart: unless-stopped
     ports:
-      - "54322:5432"
+      - "54332:5432"
     environment:
       POSTGRES_PASSWORD: ${SUPABASE_DB_PASSWORD:-astridr-local-dev}
       POSTGRES_DB: astridr
@@ -20,10 +18,11 @@ services:
       JWT_EXP: 3600
     volumes:
       - supabase-db-data:/var/lib/postgresql/data
+      - ./volumes/db/init:/docker-entrypoint-initdb.d:ro
     networks:
       - astridr-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U supabase_admin -d astridr"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,8 +34,8 @@ services:
     container_name: astridr-supabase-kong
     restart: unless-stopped
     ports:
-      - "54321:8000"
-      - "54320:8443"
+      - "54331:8000"
+      - "54330:8443"
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
@@ -54,7 +53,7 @@ services:
       supabase-auth:
         condition: service_healthy
       supabase-rest:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 15s
@@ -70,7 +69,7 @@ services:
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
-      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://localhost:54321}
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://localhost:54331}
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${SUPABASE_DB_PASSWORD:-astridr-local-dev}@supabase-db:5432/astridr
       GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
@@ -118,12 +117,8 @@ services:
     depends_on:
       supabase-db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+    # PostgREST image has no shell/curl — healthcheck not possible.
+    # Dependents use service_started instead of service_healthy.
 
   # ─── Supabase Meta (pg-meta) ───────────────────────────────────
   supabase-meta:
@@ -175,9 +170,9 @@ services:
       supabase-db:
         condition: service_healthy
       supabase-rest:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/status"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5000/status"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -210,7 +205,8 @@ services:
       supabase-db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/api/ping"]
+      # /api/ping returns 401 without JWT — drop -f so any HTTP response = healthy
+      test: ["CMD", "curl", "-so", "/dev/null", "http://localhost:4000/api/ping"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -222,8 +218,9 @@ services:
     container_name: astridr-supabase-studio
     restart: unless-stopped
     ports:
-      - "54323:3000"
+      - "54333:3000"
     environment:
+      HOSTNAME: "0.0.0.0"
       STUDIO_PG_META_URL: http://supabase-meta:8080
       SUPABASE_URL: http://supabase-kong:8000
       SUPABASE_REST_URL: http://supabase-kong:8000/rest/v1/
@@ -250,22 +247,24 @@ services:
     restart: unless-stopped
     stop_grace_period: 30s
     ports:
-      - "8080:8080"
-      - "8099:8099"
+      - "8180:8080"
+      - "8199:8099"
     volumes:
       - ./config:/app/config:ro
       - astridr-data:/home/astridr/.astridr
     environment:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      ELEVENLABS_VOICE_ID: ${ELEVENLABS_VOICE_ID}
       SUPABASE_URL: http://supabase-kong:8000
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
     networks:
       - astridr-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       supabase-db:
-        condition: service_healthy
-      ollama:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8099/health/ready')"]

@@ -6,11 +6,17 @@ RUN groupadd --gid 1000 astridr && \
 
 WORKDIR /app
 
-COPY pyproject.toml .
+COPY pyproject.toml README.md ./
 COPY astridr/ astridr/
 
-RUN pip install --no-cache-dir ".[all]" && \
-    chown -R astridr:astridr /app
+# openwakeword hard-depends on tflite-runtime which is dead (no Python 3.12+ wheels).
+# Install everything except wakeword, then add openwakeword --no-deps + ai-edge-litert.
+RUN pip install --no-cache-dir ".[embeddings,media,voice,browser,automation,google]" && \
+    pip install --no-cache-dir --no-deps openwakeword && \
+    pip install --no-cache-dir ai-edge-litert onnxruntime && \
+    chown -R astridr:astridr /app && \
+    mkdir -p /home/astridr/.astridr/media/tts && \
+    chown -R astridr:astridr /home/astridr/.astridr
 
 USER astridr
 
