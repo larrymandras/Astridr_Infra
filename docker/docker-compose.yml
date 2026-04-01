@@ -10,7 +10,7 @@ services:
     container_name: astridr-supabase-db
     restart: unless-stopped
     ports:
-      - "54332:5432"
+      - "55432:5432"
     environment:
       POSTGRES_PASSWORD: ${SUPABASE_DB_PASSWORD:-astridr-local-dev}
       POSTGRES_DB: astridr
@@ -34,8 +34,8 @@ services:
     container_name: astridr-supabase-kong
     restart: unless-stopped
     ports:
-      - "54331:8000"
-      - "54330:8443"
+      - "55431:8000"
+      - "55430:8443"
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
@@ -69,7 +69,7 @@ services:
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
-      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://localhost:54331}
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://localhost:55431}
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${SUPABASE_DB_PASSWORD:-astridr-local-dev}@supabase-db:5432/astridr
       GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
@@ -218,7 +218,7 @@ services:
     container_name: astridr-supabase-studio
     restart: unless-stopped
     ports:
-      - "54333:3000"
+      - "55433:3000"
     environment:
       HOSTNAME: "0.0.0.0"
       STUDIO_PG_META_URL: http://supabase-meta:8080
@@ -244,19 +244,22 @@ services:
   astridr:
     build: .
     container_name: astridr-agent
+    env_file: .env
     restart: unless-stopped
     stop_grace_period: 30s
     ports:
-      - "8180:8080"
+      - "8181:8181"
       - "8199:8099"
     volumes:
       - ./config:/app/config:ro
       - astridr-data:/home/astridr/.astridr
+      - ${OBSIDIAN_VAULT_PATH:-C:\Users\mandr\Mandras}:/app/vault
     environment:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
       ELEVENLABS_VOICE_ID: ${ELEVENLABS_VOICE_ID}
+      OBSIDIAN_VAULT_PATH: /app/vault
       SUPABASE_URL: http://supabase-kong:8000
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
     networks:

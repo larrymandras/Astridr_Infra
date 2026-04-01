@@ -23,6 +23,7 @@ profiles:
     tools_enabled: ["*"]
     tools_disabled: []
     tts_enabled: true
+    persona_id: astridr
 
   - id: business
     name: Business
@@ -46,6 +47,7 @@ profiles:
     tools_enabled: ["*"]
     tools_disabled: []
     tts_enabled: true
+    persona_id: astridr
 
   - id: consulting
     name: Consulting
@@ -67,6 +69,7 @@ profiles:
       - coding_agent
       - github
     tts_enabled: true
+    persona_id: astridr
 
 # ─── Runtime Agent Profiles ──────────────────────────────────────
 # Lightweight in-session personas switched via /profile command.
@@ -111,3 +114,78 @@ agent_profiles:
       verbose_tool_explanations: false
     max_rounds: 8
     temperature: 0.9
+
+# ─── Persona Voice Identity ─────────────────────────────────────
+# Per-persona ElevenLabs voice settings. voice_id is "placeholder"
+# until real voices are assigned after plumbing is verified (D-01).
+
+personas:
+  - id: astridr
+    name: "Ástríðr"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: hervor
+    name: "Hervor"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: freya
+    name: "Freya"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: brynhildr
+    name: "Brynhildr"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: ragnhildr
+    name: "Ragnhildr"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: gondul
+    name: "Göndul"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: skuld
+    name: "Skuld"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: hildr
+    name: "Hildr"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: idunn
+    name: "Iðunn"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75
+
+  - id: urdhr
+    name: "Urðr"
+    voice:
+      voice_id: "placeholder"
+      stability: 0.5
+      similarity_boost: 0.75

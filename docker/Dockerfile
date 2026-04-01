@@ -9,6 +9,12 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY astridr/ astridr/
 
+# Install system dependencies: audio transcoding + Node.js for MCP servers
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    nodejs npm \
+    && rm -rf /var/lib/apt/lists/*
+
 # openwakeword hard-depends on tflite-runtime which is dead (no Python 3.12+ wheels).
 # Install everything except wakeword, then add openwakeword --no-deps + ai-edge-litert.
 RUN pip install --no-cache-dir ".[embeddings,media,voice,browser,automation,google]" && \
