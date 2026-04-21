@@ -5,11 +5,13 @@ profiles:
       - telegram
       - web
       - voice
+      - whatsapp
     channel_mappings:
       slack: ["C0AJ120ND1U"]
       telegram: ["7815748065", "-5142563311"]
       email: ["mandrasle@gmail.com"]
       web: ["/personal"]
+      whatsapp: []  # Add contacts as "E164@c.us" -- e.g., "15551234567@c.us"
     default_for:
       - telegram
       - web
@@ -35,6 +37,7 @@ profiles:
       telegram: ["-5045799916"]
       email: ["lmandras@myprotectall.com"]
       web: ["/business"]
+      whatsapp: []  # Add contacts as "E164@c.us" -- e.g., "15551234567@c.us"
     default_for:
       - slack
     budget:
@@ -57,6 +60,7 @@ profiles:
       telegram: ["-5067822871"]
       email: ["mandrasle@gmail.com"]
       web: ["/consulting"]
+      whatsapp: []  # Add contacts as "E164@c.us" -- e.g., "15551234567@c.us"
     budget:
       daily_usd: 15.0
       monthly_usd: 300.0
@@ -116,76 +120,78 @@ agent_profiles:
     temperature: 0.9
 
 # ─── Persona Voice Identity ─────────────────────────────────────
-# Per-persona ElevenLabs voice settings. voice_id is "placeholder"
-# until real voices are assigned after plumbing is verified (D-01).
+# Per-persona ElevenLabs voice settings.
+# Ástríðr uses ELEVENLABS_VOICE_ID from .env (fallback in voice_identity.py).
+# Unassigned voice pool: 911jVK1jIeD5Y0oqLHur, 6XlHB8IkWCatOb3uMps0,
+#   FHhj7Ma71hLm7XaBLoYN, MXZ7w01d7xiRjFRHKf4E, 1QER3WW90mlmCNoKb049, nQT1a6O7VAAHWFLngyxz
 
 personas:
   - id: astridr
     name: "Ástríðr"
     voice:
-      voice_id: "placeholder"
+      voice_id: "1NOPZlhvXZ6u0CX5lJD3"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: hervor
     name: "Hervor"
     voice:
-      voice_id: "placeholder"
+      voice_id: "rPRV5kR1KIzxeSAVWXUJ"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: freya
     name: "Freya"
     voice:
-      voice_id: "placeholder"
+      voice_id: "TznStyIaD5UZio1ESOAP"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: brynhildr
     name: "Brynhildr"
     voice:
-      voice_id: "placeholder"
+      voice_id: "mV9IEZHdysoobSNcGZJR"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: ragnhildr
     name: "Ragnhildr"
     voice:
-      voice_id: "placeholder"
+      voice_id: "i5wMaluNrSgXY3NH368s"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: gondul
     name: "Göndul"
     voice:
-      voice_id: "placeholder"
+      voice_id: "YJ6k4s6T2wtJYJKvus08"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: skuld
     name: "Skuld"
     voice:
-      voice_id: "placeholder"
+      voice_id: "soMdkfLtFsd6Xd1pnMwH"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: hildr
     name: "Hildr"
     voice:
-      voice_id: "placeholder"
+      voice_id: "VR8MrJTnTbRpbY4x7FBJ"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: idunn
     name: "Iðunn"
     voice:
-      voice_id: "placeholder"
+      voice_id: "t4Rci3pfkemlKKVWPiq3"
       stability: 0.5
       similarity_boost: 0.75
 
   - id: urdhr
     name: "Urðr"
     voice:
-      voice_id: "placeholder"
+      voice_id: "47XJNCuS4IvfR3NoCyEu"
       stability: 0.5
       similarity_boost: 0.75
