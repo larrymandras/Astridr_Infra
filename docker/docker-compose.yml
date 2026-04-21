@@ -3,52 +3,12 @@
 # Phase 1: Full Supabase stack with health checks, network isolation
 # Phase 2: Add changedetection.io, additional services
 
-x-logging: &default-logging
-  driver: "json-file"
-  options:
-    max-size: "10m"
-    max-file: "3"
-
-x-war-room-base: &war-room-base
-  build:
-    context: .
-    args:
-      INSTALL_EXTRAS: telegram,slack,email,embeddings,media,voice,browser,automation,google,war_room
-      INSTALL_WAKEWORD: "true"
-  restart: unless-stopped
-  healthcheck:
-    test: ["CMD-SHELL", "python -c \"import os; os.kill(1, 0)\""]
-    interval: 30s
-    timeout: 5s
-    retries: 3
-  profiles:
-    - war-room
-  logging: *default-logging
-  networks:
-    - astridr-network
-  depends_on:
-    livekit:
-      condition: service_healthy
-
-x-war-room-env: &war-room-env
-  LIVEKIT_URL: ws://livekit:7880
-  LIVEKIT_API_KEY: devkey
-  LIVEKIT_API_SECRET: secret
-  DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
-  ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
-  ELEVEN_API_KEY: ${ELEVENLABS_API_KEY}
-  WAR_ROOM_LLM_MODEL: ${WAR_ROOM_LLM_MODEL:-openrouter/anthropic/claude-3.5-haiku}
-  OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
-  SUPABASE_URL: http://supabase-kong:8000
-  SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
-
 services:
   # ─── Supabase Database ──────────────────────────────────────────
   supabase-db:
     image: supabase/postgres:15.6.1.143
     container_name: astridr-supabase-db
     restart: unless-stopped
-    logging: *default-logging
     ports:
       - "55432:5432"
     environment:
@@ -73,7 +33,6 @@ services:
     image: kong:2.8.1
     container_name: astridr-supabase-kong
     restart: unless-stopped
-    logging: *default-logging
     ports:
       - "55431:8000"
       - "55430:8443"
@@ -107,7 +66,6 @@ services:
     image: supabase/gotrue:v2.151.0
     container_name: astridr-supabase-auth
     restart: unless-stopped
-    logging: *default-logging
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
@@ -146,14 +104,12 @@ services:
     image: postgrest/postgrest:v12.0.1
     container_name: astridr-supabase-rest
     restart: unless-stopped
-    logging: *default-logging
     environment:
       PGRST_DB_URI: postgres://authenticator:${SUPABASE_DB_PASSWORD:-astridr-local-dev}@supabase-db:5432/astridr
       PGRST_DB_SCHEMAS: public,storage,graphql_public
       PGRST_DB_ANON_ROLE: anon
       PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-for-local-dev-only}
       PGRST_DB_USE_LEGACY_GUCS: "false"
-      PGRST_DB_CHANNEL_ENABLED: "true"
       PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-for-local-dev-only}
       PGRST_APP_SETTINGS_JWT_EXP: 3600
     networks:
@@ -169,7 +125,6 @@ services:
     image: supabase/postgres-meta:v0.80.0
     container_name: astridr-supabase-meta
     restart: unless-stopped
-    logging: *default-logging
     environment:
       PG_META_PORT: 8080
       PG_META_DB_HOST: supabase-db
@@ -194,7 +149,6 @@ services:
     image: supabase/storage-api:v0.46.4
     container_name: astridr-supabase-storage
     restart: unless-stopped
-    logging: *default-logging
     environment:
       ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
       SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
@@ -229,7 +183,6 @@ services:
     image: supabase/realtime:v2.28.32
     container_name: astridr-supabase-realtime
     restart: unless-stopped
-    logging: *default-logging
     environment:
       PORT: 4000
       DB_HOST: supabase-db
@@ -264,7 +217,6 @@ services:
     image: supabase/studio:20240422-5cf8f30
     container_name: astridr-supabase-studio
     restart: unless-stopped
-    logging: *default-logging
     ports:
       - "55433:3000"
     environment:
@@ -290,15 +242,10 @@ services:
 
   # ─── Ástríðr Agent ────────────────────────────────────────────
   astridr:
-    build:
-      context: .
-      args:
-        INSTALL_EXTRAS: telegram,slack,email,embeddings,media,voice,browser,automation,google
-        INSTALL_WAKEWORD: "true"
+    build: .
     container_name: astridr-agent
     env_file: .env
     restart: unless-stopped
-    logging: *default-logging
     stop_grace_period: 30s
     deploy:
       resources:
@@ -311,7 +258,6 @@ services:
     ports:
       - "8181:8181"
       - "8199:8099"
-      - "8090:8090"
     volumes:
       - ./config:/app/config:ro
       - astridr-data:/home/astridr/.astridr
@@ -324,9 +270,6 @@ services:
       OBSIDIAN_VAULT_PATH: /app/vault
       SUPABASE_URL: http://supabase-kong:8000
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
-      LIVEKIT_URL: ws://livekit:7880
-      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-devkey}
-      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-secret}
     networks:
       - astridr-network
     extra_hosts:
@@ -346,7 +289,6 @@ services:
     build: ./services/whatsapp-bridge
     container_name: astridr-whatsapp-bridge
     restart: unless-stopped
-    logging: *default-logging
     environment:
       BRIDGE_API_KEY: ${WHATSAPP_BRIDGE_API_KEY}
       ASTRIDR_WEBHOOK_URL: http://astridr:8181/internal/whatsapp
@@ -366,73 +308,37 @@ services:
       retries: 5
       start_period: 30s
 
-  # ─── LiveKit Server (War Room Phase 70) ──────────────────────────
-  livekit:
-    image: livekit/livekit-server:v1.11.0
-    container_name: astridr-livekit
-    command: --dev --bind 0.0.0.0 --node-ip 127.0.0.1
+  # ─── Ollama (Local LLM) ────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: astridr-ollama
     restart: unless-stopped
-    logging: *default-logging
-    profiles:
-      - war-room
     ports:
-      - "7880:7880"
-      - "7881:7881"
-      - "50000-50020:50000-50020/udp"
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
     networks:
       - astridr-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:7880/"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
       retries: 3
-      start_period: 10s
-
-  # ─── War Room Agent Workers (War Room Phase 70) ───────────────────
-  war-room-astridr:
-    <<: *war-room-base
-    container_name: astridr-war-room-astridr
-    command: python -m astridr.channels.war_room.agents.astridr_agent dev
-    environment:
-      <<: *war-room-env
-      ASTRIDR_ELEVEN_VOICE_ID: ${ASTRIDR_ELEVEN_VOICE_ID}
-
-  war-room-hervor:
-    <<: *war-room-base
-    container_name: astridr-war-room-hervor
-    command: python -m astridr.channels.war_room.agents.hervor_agent dev
-    environment:
-      <<: *war-room-env
-      HERVOR_ELEVEN_VOICE_ID: ${HERVOR_ELEVEN_VOICE_ID}
-
-  war-room-freya:
-    <<: *war-room-base
-    container_name: astridr-war-room-freya
-    command: python -m astridr.channels.war_room.agents.freya_agent dev
-    environment:
-      <<: *war-room-env
-      FREYA_ELEVEN_VOICE_ID: ${FREYA_ELEVEN_VOICE_ID}
-
-  war-room-gondul:
-    <<: *war-room-base
-    container_name: astridr-war-room-gondul
-    command: python -m astridr.channels.war_room.agents.gondul_agent dev
-    environment:
-      <<: *war-room-env
-      GONDUL_ELEVEN_VOICE_ID: ${GONDUL_ELEVEN_VOICE_ID}
-
-  war-room-ragnhildr:
-    <<: *war-room-base
-    container_name: astridr-war-room-ragnhildr
-    command: python -m astridr.channels.war_room.agents.ragnhildr_agent dev
-    environment:
-      <<: *war-room-env
-      RAGNHILDR_ELEVEN_VOICE_ID: ${RAGNHILDR_ELEVEN_VOICE_ID}
+      start_period: 30s
 
 volumes:
   supabase-db-data:
     driver: local
   supabase-storage-data:
+    driver: local
+  ollama-data:
     driver: local
   astridr-data:
     driver: local
